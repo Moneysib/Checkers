@@ -1,0 +1,665 @@
+﻿<Window x:Class="SqrtMVVM.Views.MainWindow"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:SqrtMVVM.ViewModels"
+        Title="ШАШКИ"
+        Width="900" Height="750"
+        Icon="/Assets/avalonia-logo.ico"
+        mc:Ignorable="d">
+    
+    <!-- Подключение файла стилей -->
+    <Window.Styles>
+        <StyleInclude Source="RibbonStyles.axaml"/>
+    </Window.Styles>
+    
+    <Grid>
+        <DockPanel>
+            <StackPanel DockPanel.Dock="Top" Background="#F0F0F0">
+                
+                <!-- Вкладки Ribbon -->
+                <Border Classes="ribbon-tab-border">
+                    <StackPanel Orientation="Horizontal">
+                        <Button Classes="ribbon-tab-button"
+                                Content="Главная" 
+                                Command="{Binding ToggleGameMenuCommand}"
+                                FontFamily="Segoe UI"
+                                FontSize="13"
+                                FontWeight="SemiBold"
+                                Background="{Binding GameTabBackground}"/>
+                        <Button Classes="ribbon-tab-button"
+                                Content="Настройки" 
+                                Command="{Binding ToggleSettingsMenuCommand}"
+                                FontFamily="Segoe UI"
+                                FontSize="13"
+                                FontWeight="SemiBold"
+                                Background="{Binding SettingsTabBackground}"/>
+                        <Button Classes="ribbon-tab-button"
+                                Content="Вид" 
+                                Command="{Binding ToggleAppearanceMenuCommand}"
+                                FontFamily="Segoe UI"
+                                FontSize="13"
+                                FontWeight="SemiBold"
+                                Background="{Binding AppearanceTabBackground}"/>
+                        <Button Classes="ribbon-tab-button"
+                                Content="Режим" 
+                                Command="{Binding ToggleModeMenuCommand}"
+                                FontFamily="Segoe UI"
+                                FontSize="13"
+                                FontWeight="SemiBold"
+                                Background="{Binding ModeTabBackground}"/>
+                        <Button Classes="ribbon-tab-button"
+                                Content="Статистика" 
+                                Command="{Binding ToggleStatsMenuCommand}"
+                                FontFamily="Segoe UI"
+                                FontSize="13"
+                                FontWeight="SemiBold"
+                                Background="{Binding StatsTabBackground}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Подменю для вкладки "Главная" -->
+                <Border Classes="ribbon-submenu-border"
+                        IsVisible="{Binding IsGameMenuVisible}"
+                        Height="95">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <!-- Группа "Игра" -->
+                            <Border Classes="ribbon-group-border">
+                                <StackPanel>
+                                    <TextBlock Classes="ribbon-group-title" Text="Игра" FontFamily="Segoe UI"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Content="Новая игра" 
+                                                Command="{Binding NewGameCommand}"
+                                                Width="95" Height="38" Margin="2"
+                                                Background="#E1ECF4" BorderBrush="#7FA6C7"
+                                                FontFamily="Segoe UI"
+                                                FontSize="12"
+                                                FontWeight="SemiBold"/>
+                                        <Button Content="Сохранить игру" 
+                                                Command="{Binding SaveGameCommand}"
+                                                Width="125" Height="38" Margin="2"
+                                                Background="Transparent"
+                                                FontFamily="Segoe UI"
+                                                FontSize="12"
+                                                FontWeight="SemiBold"/>
+                                        <Button Content="Загрузить игру" 
+                                                Command="{Binding LoadGameCommand}"
+                                                Width="120" Height="38" Margin="2"
+                                                Background="Transparent"
+                                                FontFamily="Segoe UI"
+                                                FontSize="12"
+                                                FontWeight="SemiBold"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Группа "Действия" -->
+                            <Border Classes="ribbon-group-border">
+                                <StackPanel>
+                                    <TextBlock Classes="ribbon-group-title" Text="Действия" FontFamily="Segoe UI"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Content="Отменить ход" 
+                                                Command="{Binding UndoCommand}"
+                                                Width="112" Height="38" Margin="2"
+                                                Background="Transparent"
+                                                FontFamily="Segoe UI"
+                                                FontSize="12"
+                                                FontWeight="SemiBold"/>
+                                        <Button Content="Пауза" 
+                                                Command="{Binding PauseGameCommand}"
+                                                Width="60" Height="38" Margin="2"
+                                                Background="Transparent"
+                                                FontFamily="Segoe UI"
+                                                FontSize="12"
+                                                FontWeight="SemiBold"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Группа "Завершение" -->
+                            <Border>
+                                <StackPanel>
+                                    <TextBlock Classes="ribbon-group-title" Text="Завершение" FontFamily="Segoe UI"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Content="Сдаться" 
+                                                Command="{Binding EndGameCommand}"
+                                                Width="75" Height="38" Margin="2"
+                                                Background="#F4E1E1" BorderBrush="#C77F7F"
+                                                FontFamily="Segoe UI"
+                                                FontSize="12"
+                                                FontWeight="SemiBold"/>
+                                        <Button Content="Ничья" 
+                                                Command="{Binding ExitCommand}"
+                                                Width="65" Height="38" Margin="2"
+                                                Background="Transparent"
+                                                FontFamily="Segoe UI"
+                                                FontSize="12"
+                                                FontWeight="SemiBold"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Подменю для вкладки "Настройки" -->
+                <Border Classes="ribbon-submenu-border"
+                        IsVisible="{Binding IsSettingsMenuVisible}"
+                        Height="125">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <!-- Группа "Общие" -->
+                            <Border Classes="ribbon-group-border">
+                                <StackPanel>
+                                    <TextBlock Classes="ribbon-group-title" Text="Общие настройки" FontFamily="Segoe UI"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Content="Звук" 
+                                                Command="{Binding ToggleSoundCommand}"
+                                                Width="52" Height="38" Margin="2"
+                                                Background="{Binding SoundButtonBackground}"
+                                                BorderBrush="#7FA6C7"
+                                                FontFamily="Segoe UI"
+                                                FontSize="12"
+                                                FontWeight="SemiBold"/>
+                                        <Button Content="Подсказки" 
+                                                Command="{Binding ToggleHintsCommand}"
+                                                Width="90" Height="38" Margin="2"
+                                                Background="{Binding HintsButtonBackground}"
+                                                BorderBrush="#7FA6C7"
+                                                FontFamily="Segoe UI"
+                                                FontSize="12"
+                                                FontWeight="SemiBold"/>
+                                        <Button Content="Таймер" 
+                                                Command="{Binding ToggleTimerCommand}"
+                                                Width="70" Height="38" Margin="2"
+                                                Background="{Binding TimerButtonBackground}"
+                                                BorderBrush="#7FA6C7"
+                                                FontFamily="Segoe UI"
+                                                FontSize="12"
+                                                FontWeight="SemiBold"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Группа "Параметры игры" -->
+                            <Border Classes="ribbon-group-border">
+                                <StackPanel>
+                                    <TextBlock Classes="ribbon-group-title" Text="Размер доски" FontFamily="Segoe UI"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Content="8x8" 
+                                                Command="{Binding SetBoardSize8Command}"
+                                                Width="50" Height="38" Margin="2"
+                                                Background="{Binding BoardSize8Background}"
+                                                FontFamily="Segoe UI"
+                                                FontSize="12"
+                                                FontWeight="SemiBold"/>
+                                        <Button Content="9x9" 
+                                                Command="{Binding SetBoardSize9Command}"
+                                                Width="50" Height="38" Margin="2"
+                                                Background="{Binding BoardSize9Background}"
+                                                FontFamily="Segoe UI"
+                                                FontSize="12"
+                                                FontWeight="SemiBold"/>
+                                        <Button Content="10x10" 
+                                                Command="{Binding SetBoardSize10Command}"
+                                                Width="60" Height="38" Margin="2"
+                                                Background="{Binding BoardSize10Background}"
+                                                FontFamily="Segoe UI"
+                                                FontSize="12"
+                                                FontWeight="SemiBold"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Группа "Уровень бота" -->
+                            <Border>
+                                <StackPanel>
+                                    <TextBlock Classes="ribbon-group-title" Text="Уровень бота" FontFamily="Segoe UI"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Content="1" 
+                                                Command="{Binding SetBotLevel1Command}"
+                                                Width="35" Height="38" Margin="2"
+                                                Background="{Binding BotLevel1Background}"
+                                                IsEnabled="{Binding IsBotSettingsEnabled}"
+                                                FontFamily="Segoe UI"
+                                                FontSize="12"
+                                                FontWeight="SemiBold"/>
+                                        <Button Content="2" 
+                                                Command="{Binding SetBotLevel2Command}"
+                                                Width="35" Height="38" Margin="2"
+                                                Background="{Binding BotLevel2Background}"
+                                                IsEnabled="{Binding IsBotSettingsEnabled}"
+                                                FontFamily="Segoe UI"
+                                                FontSize="12"
+                                                FontWeight="SemiBold"/>
+                                        <Button Content="3" 
+                                                Command="{Binding SetBotLevel3Command}"
+                                                Width="35" Height="38" Margin="2"
+                                                Background="{Binding BotLevel3Background}"
+                                                IsEnabled="{Binding IsBotSettingsEnabled}"
+                                                FontFamily="Segoe UI"
+                                                FontSize="12"
+                                                FontWeight="SemiBold"/>
+                                        <Button Content="4" 
+                                                Command="{Binding SetBotLevel4Command}"
+                                                Width="35" Height="38" Margin="2"
+                                                Background="{Binding BotLevel4Background}"
+                                                IsEnabled="{Binding IsBotSettingsEnabled}"
+                                                FontFamily="Segoe UI"
+                                                FontSize="12"
+                                                FontWeight="SemiBold"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Подменю для вкладки "Вид" -->
+                <Border Classes="ribbon-submenu-border"
+                        IsVisible="{Binding IsAppearanceMenuVisible}"
+                        Height="95">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <!-- Группа "Цвета" -->
+                            <Border Classes="ribbon-group-border">
+                                <StackPanel>
+                                    <TextBlock Classes="ribbon-group-title" Text="Цвета шашек" FontFamily="Segoe UI"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Content="Классические" 
+                                                Command="{Binding SetClassicColorsCommand}"
+                                                Width="105" Height="38" Margin="2"
+                                                Background="{Binding ClassicColorsBackground}"
+                                                FontFamily="Segoe UI"
+                                                FontSize="12"
+                                                FontWeight="SemiBold"/>
+                                        <Button Content="Красные" 
+                                                Command="{Binding SetRedColorsCommand}"
+                                                Width="90" Height="38" Margin="2"
+                                                Background="{Binding RedColorsBackground}"
+                                                FontFamily="Segoe UI"
+                                                FontSize="12"
+                                                FontWeight="SemiBold"/>
+                                        <Button Content="Синие" 
+                                                Command="{Binding SetBlueColorsCommand}"
+                                                Width="75" Height="38" Margin="2"
+                                                Background="{Binding BlueColorsBackground}"
+                                                FontFamily="Segoe UI"
+                                        FontSize="12"
+                                        FontWeight="SemiBold"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Группа "Доска" -->
+                            <Border>
+                                <StackPanel>
+                                    <TextBlock Classes="ribbon-group-title" Text="Стиль доски" FontFamily="Segoe UI"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Content="Классическая" 
+                                                Command="{Binding SetClassicBoardCommand}"
+                                                Width="105" Height="38" Margin="2"
+                                                Background="{Binding ClassicBoardBackground}"
+                                                FontFamily="Segoe UI"
+                                                FontSize="12"
+                                                FontWeight="SemiBold"/>
+                                        <Button Content="Зеленая" 
+                                                Command="{Binding SetGreenBoardCommand}"
+                                                Width="85" Height="38" Margin="2"
+                                                Background="{Binding GreenBoardBackground}"
+                                                FontFamily="Segoe UI"
+                                                FontSize="12"
+                                                FontWeight="SemiBold"/>
+                                        <Button Content="Серая" 
+                                                Command="{Binding SetGrayBoardCommand}"
+                                                Width="75" Height="38" Margin="2"
+                                                Background="{Binding GrayBoardBackground}"
+                                                FontFamily="Segoe UI"
+                                                FontSize="12"
+                                                FontWeight="SemiBold"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Подменю для вкладки "Режим" -->
+                <Border Classes="ribbon-submenu-border"
+                        IsVisible="{Binding IsModeMenuVisible}"
+                        Height="95">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <!-- Группа "Режим игры" -->
+                            <Border Classes="ribbon-group-border">
+                                <StackPanel>
+                                    <TextBlock Classes="ribbon-group-title" Text="Режим игры" FontFamily="Segoe UI"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Content="PvP" 
+                                                Command="{Binding SetPlayerVsPlayerCommand}"
+                                                Width="65" Height="38" Margin="2"
+                                                Background="{Binding PlayerVsPlayerBackground}"
+                                                FontFamily="Segoe UI"
+                                                FontSize="12"
+                                                FontWeight="SemiBold"/>
+                                        <Button Content="PvC" 
+                                                Command="{Binding SetPlayerVsComputerCommand}"
+                                                Width="65" Height="38" Margin="2"
+                                                Background="{Binding PlayerVsComputerBackground}"
+                                                FontFamily="Segoe UI"
+                                                FontSize="12"
+                                                FontWeight="SemiBold"/>
+                                        <Button Content="CvC" 
+                                                Command="{Binding SetComputerVsComputerCommand}"
+                                                Width="65" Height="38" Margin="2"
+                                                Background="{Binding ComputerVsComputerBackground}"
+                                                FontFamily="Segoe UI"
+                                                FontSize="12"
+                                                FontWeight="SemiBold"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Группа "Справка" -->
+                            <Border>
+                                <StackPanel>
+                                    <TextBlock Classes="ribbon-group-title" Text="Справка" FontFamily="Segoe UI"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Content="Правила" 
+                                                Command="{Binding ShowRulesCommand}"
+                                                Width="85" Height="38" Margin="2"
+                                                Background="Transparent"
+                                                FontFamily="Segoe UI"
+                                                FontSize="12"
+                                                FontWeight="SemiBold"/>
+                                        <Button Content="О программе" 
+                                                Command="{Binding AboutCommand}"
+                                                Width="105" Height="38" Margin="2"
+                                                Background="Transparent"
+                                                FontFamily="Segoe UI"
+                                                FontSize="12"
+                                                FontWeight="SemiBold"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Подменю для вкладки "Статистика" -->
+                <Border Classes="ribbon-submenu-border"
+                        IsVisible="{Binding IsStatsMenuVisible}"
+                        Height="95">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <!-- Группа "Статистика" -->
+                            <Border Classes="ribbon-group-border">
+                                <StackPanel>
+                                    <TextBlock Classes="ribbon-group-title" Text="Статистика" FontFamily="Segoe UI"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Content="История" 
+                                                Command="{Binding ShowGameHistoryCommand}"
+                                                Width="85" Height="38" Margin="2"
+                                                Background="Transparent"
+                                                FontFamily="Segoe UI"
+                                                FontSize="12"
+                                                FontWeight="SemiBold"/>
+                                        <Button Content="Сбросить" 
+                                                Command="{Binding ResetStatsCommand}"
+                                                Width="85" Height="38" Margin="2"
+                                                Background="Transparent"
+                                                FontFamily="Segoe UI"
+                                                FontSize="12"
+                                                FontWeight="SemiBold"/>
+                                        <Button Content="Экспорт" 
+                                                Command="{Binding ExportStatsCommand}"
+                                                Width="85" Height="38" Margin="2"
+                                                Background="Transparent"
+                                                FontFamily="Segoe UI"
+                                                FontSize="12"
+                                                FontWeight="SemiBold"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Группа "Информация" -->
+                            <Border>
+                                <StackPanel>
+                                    <TextBlock Classes="ribbon-group-title" Text="Текущая статистика" FontFamily="Segoe UI"/>
+                                    <StackPanel>
+                                        <TextBlock Classes="status-text" 
+                                                  Text="{Binding GamesPlayed}" 
+                                                  Margin="2" 
+                                                  HorizontalAlignment="Center"
+                                                  FontFamily="Segoe UI"
+                                                  FontSize="11"
+                                                  FontWeight="SemiBold"/>
+                                        <TextBlock Classes="status-text" 
+                                                  Text="{Binding WhiteWins}" 
+                                                  Margin="2" 
+                                                  HorizontalAlignment="Center"
+                                                  FontFamily="Segoe UI"
+                                                  FontSize="11"
+                                                  FontWeight="SemiBold"/>
+                                        <TextBlock Classes="status-text" 
+                                                  Text="{Binding BlackWins}" 
+                                                  Margin="2" 
+                                                  HorizontalAlignment="Center"
+                                                  FontFamily="Segoe UI"
+                                                  FontSize="11"
+                                                  FontWeight="SemiBold"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Строка состояния -->
+                <Border Classes="status-bar-border">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <TextBlock Classes="status-text" 
+                                  Text="{Binding GameStatus}" 
+                                  Margin="10,0"
+                                  FontFamily="Segoe UI"
+                                  FontSize="11.5"
+                                  FontWeight="SemiBold"/>
+                        
+                        <StackPanel Grid.Column="1" 
+                                    Orientation="Horizontal" 
+                                    Margin="0,0,10,0">
+                            <TextBlock Classes="status-label" 
+                                      Text="Ход:" 
+                                      Margin="0,0,5,0"
+                                      FontFamily="Segoe UI"
+                                      FontSize="11.5"
+                                      FontWeight="SemiBold"/>
+                            <TextBlock Classes="status-label" 
+                                      Text="{Binding CurrentPlayer}" 
+                                      Margin="0,0,15,0"
+                                      FontFamily="Segoe UI"
+                                      FontSize="11.5"
+                                      FontWeight="SemiBold"/>
+                            <TextBlock Classes="status-text" 
+                                      Text="{Binding WhiteScore}" 
+                                      Margin="0,0,10,0"
+                                      FontFamily="Segoe UI"
+                                      FontSize="11.5"
+                                      FontWeight="SemiBold"/>
+                            <TextBlock Classes="status-text" 
+                                      Text="{Binding BlackScore}"
+                                      FontFamily="Segoe UI"
+                                      FontSize="11.5"
+                                      FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </StackPanel>
+
+            <!-- Игровое поле -->
+            <Grid Margin="20">
+                <!-- Доска для шашек по центру -->
+                <Border HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        BorderBrush="#8B4513" 
+                        BorderThickness="3" 
+                        Background="{Binding BoardBackground}"
+                        CornerRadius="2">
+                    
+                    <ItemsControl ItemsSource="{Binding BoardCells}"
+                                  x:Name="BoardItemsControl">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid Rows="{Binding BoardSize}" 
+                                             Columns="{Binding BoardSize}" 
+                                             Width="600" 
+                                             Height="600"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <!-- Контейнер для клетки -->
+                                <Border Width="75" 
+                                        Height="75"
+                                        Background="{Binding Background}"
+                                        BorderBrush="#8B4513"
+                                        BorderThickness="0.5">
+                                    
+                                    <Grid>
+                                        <!-- Визуальное представление шашки -->
+                                        <Grid HorizontalAlignment="Center"
+                                              VerticalAlignment="Center">
+                                            <!-- Шашка -->
+                                            <Ellipse Width="60" 
+                                                     Height="60"
+                                                     Fill="{Binding CheckerFill}"
+                                                     Stroke="{Binding CheckerFill}"
+                                                     StrokeThickness="1"
+                                                     IsVisible="{Binding HasChecker}">
+                                            </Ellipse>
+                                            
+                                            <!-- Внутренняя шашка для объема -->
+                                            <Ellipse Width="56" 
+                                                     Height="56"
+                                                     Fill="{Binding CheckerFill}"
+                                                     Stroke="Transparent"
+                                                     IsVisible="{Binding HasChecker}"/>
+                                            
+                                            <!-- Корона для дамки -->
+                                            <TextBlock Text="♛" 
+                                                       FontSize="30"
+                                                       Foreground="Gold"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"
+                                                       IsVisible="{Binding IsKing}"/>
+                                        </Grid>
+                                        
+                                        <!-- Подсветка выбранной клетки -->
+                                        <Border Background="#40FFD700" 
+                                                CornerRadius="2"
+                                                IsVisible="{Binding IsSelected}"/>
+                                        
+                                        <!-- Подсветка возможного хода -->
+                                        <Border Background="#4000FF00" 
+                                                CornerRadius="2"
+                                                IsVisible="{Binding IsPossibleMove}"/>
+                                        
+                                        <!-- Подсветка обязательного взятия -->
+                                        <Border Background="#40FF0000" 
+                                                CornerRadius="2"
+                                                IsVisible="{Binding IsMandatoryCapture}"/>
+                                        
+                                        <!-- Прозрачная панель для кликов -->
+                                        <Border Background="Transparent"
+                                                Cursor="Hand"
+                                                IsHitTestVisible="True"
+                                                PointerPressed="OnCellPointerPressed">
+                                        </Border>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Border>
+                
+                <!-- Окно с результатом игры -->
+                <Border IsVisible="{Binding ShowGameResult}"
+                        Background="#80FFFFFF"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        ZIndex="1000">
+                    <Border HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Background="White"
+                            CornerRadius="10"
+                            Padding="30"
+                            BorderBrush="#333"
+                            BorderThickness="2"
+                            MinWidth="400">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <TextBlock Text="ИГРА ОКОНЧЕНА!"
+                                      FontSize="24"
+                                      FontWeight="Bold"
+                                      Foreground="Black"
+                                      HorizontalAlignment="Center"
+                                      Margin="0,0,0,20"/>
+                            
+                            <TextBlock Text="{Binding GameResultMessage}"
+                                      FontSize="18"
+                                      FontWeight="SemiBold"
+                                      Foreground="Black"
+                                      TextWrapping="Wrap"
+                                      HorizontalAlignment="Center"
+                                      TextAlignment="Center"
+                                      Margin="0,0,0,30"/>
+                            
+                            <Button Content="НОВАЯ ИГРА"
+                                    Command="{Binding CloseGameResultCommand}"
+                                    Width="180"
+                                    Height="50"
+                                    FontSize="16"
+                                    FontWeight="Bold"
+                                    Background="#4CAF50"
+                                    Foreground="White"
+                                    BorderBrush="#388E3C"
+                                    BorderThickness="2"
+                                    HorizontalAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center"
+                                    Padding="0"
+                                    Cursor="Hand">
+                                <Button.Styles>
+                                    <Style Selector="Button">
+                                        <Setter Property="Template">
+                                            <ControlTemplate>
+                                                <Border Background="{TemplateBinding Background}"
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                                        CornerRadius="2">
+                                                    <ContentPresenter Name="PART_ContentPresenter"
+                                                                      Content="{TemplateBinding Content}"
+                                                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                                      HorizontalAlignment="Center"
+                                                                      VerticalAlignment="Center"
+                                                                      Margin="0"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter>
+                                    </Style>
+                                </Button.Styles>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+                </Border>
+            </Grid>
+        </DockPanel>
+    </Grid>
+</Window>
