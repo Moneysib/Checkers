@@ -1,4 +1,4 @@
-﻿using Avalonia.Media;
+using Avalonia.Media;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -780,6 +780,7 @@ namespace SqrtMVVM.ViewModels
                 SwitchPlayer();
                 ClearPossibleMoves();
                 CheckMandatoryCaptures();
+                CheckForStalemate();
 
                 GameStatus = "Ход отменен. Ходят " + CurrentPlayer;
             }
@@ -1538,6 +1539,173 @@ namespace SqrtMVVM.ViewModels
             ClearPossibleMoves();
             SwitchPlayer();
             CheckMandatoryCaptures();
+
+            // Проверяем пат после переключения игрока
+            CheckForStalemate();
+        }
+
+        // Проверка на пат (ничья по причине отсутствия ходов)
+        private void CheckForStalemate()
+        {
+            // Сначала проверяем, есть ли у текущего игрока шашки
+            var currentColor = CurrentPlayer == "Белые" ? Brushes.White : Brushes.Black;
+            var opponentColor = CurrentPlayer == "Белые" ? Brushes.Black : Brushes.White;
+
+            int currentPlayerCheckerCount = 0;
+            int opponentCheckerCount = 0;
+
+            // Считаем шашки обоих игроков
+            foreach (var cell in BoardCells)
+            {
+                if (cell.HasChecker)
+                {
+                    if (cell.CheckerFill == currentColor)
+                        currentPlayerCheckerCount++;
+                    else if (cell.CheckerFill == opponentColor)
+                        opponentCheckerCount++;
+                }
+            }
+
+            // Если у текущего игрока нет шашек - это ПОРАЖЕНИЕ, а не пат
+            if (currentPlayerCheckerCount == 0)
+            {
+                string winner = CurrentPlayer == "Белые" ? "Черные" : "Белые";
+                ShowGameResultMessage($"ПОБЕДА {winner}!\nУ игрока {CurrentPlayer} не осталось шашек.",
+                    winner == "Белые" ? Brushes.White : Brushes.Black);
+                return;
+            }
+
+            // Если у противника нет шашек - это ПОБЕДА текущего игрока
+            if (opponentCheckerCount == 0)
+            {
+                ShowGameResultMessage($"ПОБЕДА {CurrentPlayer}!\nУ противника не осталось шашек.",
+                    CurrentPlayer == "Белые" ? Brushes.White : Brushes.Black);
+                return;
+            }
+
+            // Проверяем, есть ли у текущего игрока ходы (только если у него есть шашки)
+            if (currentPlayerCheckerCount > 0 && IsStalemate(CurrentPlayer))
+            {
+                // У игрока есть шашки, но нет ходов - объявляем ничью
+                string opponent = CurrentPlayer == "Белые" ? "Черные" : "Белые";
+                ShowGameResultMessage($"НИЧЬЯ!\nИгрок {CurrentPlayer} не имеет возможных ходов.\nПобедитель: {opponent}?", Brushes.Gold);
+
+                // Обновляем статистику как ничью
+                UpdateStatistics("Ничья");
+            }
+        }
+
+        // Проверка на пат (ничья по причине отсутствия ходов)
+        private bool IsStalemate(string playerColor)
+        {
+            var currentColor = playerColor == "Белые" ? Brushes.White : Brushes.Black;
+            bool hasAnyMove = false;
+
+            // Проверяем все шашки текущего игрока
+            foreach (var cell in BoardCells)
+            {
+                if (cell.HasChecker && cell.CheckerFill == currentColor)
+                {
+                    // Проверяем, есть ли у этой шашки хотя бы один возможный ход
+                    if (HasAnyPossibleMove(cell))
+                    {
+                        hasAnyMove = true;
+                        break;
+                    }
+                }
+            }
+
+            // Если нет ни одного возможного хода - это пат
+            return !hasAnyMove;
+        }
+
+        // Проверяет, есть ли у шашки хотя бы один возможный ход
+        private bool HasAnyPossibleMove(CheckerCell cell)
+        {
+            if (cell.IsKing)
+            {
+                return HasKingAnyMove(cell);
+            }
+            else
+            {
+                return HasSimpleCheckerAnyMove(cell);
+            }
+        }
+
+        // Проверяет ходы обычной шашки
+        private bool HasSimpleCheckerAnyMove(CheckerCell cell)
+        {
+            // Проверяем простые ходы
+            int rowDir = cell.CheckerFill == Brushes.White ? -1 : 1;
+
+            // Простые ходы вперед
+            if (CanMoveSimple(cell, cell.Row + rowDir, cell.Column - 1) ||
+                CanMoveSimple(cell, cell.Row + rowDir, cell.Column + 1))
+            {
+                return true;
+            }
+
+            // Проверяем взятия (вперед и назад)
+            return HasSimpleCaptureMoves(cell);
+        }
+
+        // Проверяет ходы дамки
+        private bool HasKingAnyMove(CheckerCell cell)
+        {
+            // Сначала проверяем взятия
+            if (HasKingCaptureMoves(cell))
+            {
+                return true;
+            }
+
+            // Проверяем простые ходы дамки
+            int[] directions = { -1, 1 };
+
+            foreach (var rowDir in directions)
+            {
+                foreach (var colDir in directions)
+                {
+                    // Проверяем все клетки по диагонали
+                    for (int distance = 1; distance < BoardSize; distance++)
+                    {
+                        int newRow = cell.Row + distance * rowDir;
+                        int newCol = cell.Column + distance * colDir;
+
+                        if (!IsValidCell(newRow, newCol)) break;
+
+                        var targetCell = GetCell(newRow, newCol);
+
+                        // Проверяем черную клетку
+                        if ((newRow + newCol) % 2 == 0) break;
+
+                        if (targetCell.HasChecker)
+                        {
+                            // Занятая клетка - не можем пройти дальше
+                            break;
+                        }
+                        else
+                        {
+                            // Нашли свободную клетку для хода
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        // Проверяет возможность простого хода
+        private bool CanMoveSimple(CheckerCell fromCell, int toRow, int toCol)
+        {
+            if (!IsValidCell(toRow, toCol)) return false;
+
+            var targetCell = GetCell(toRow, toCol);
+
+            // Проверяем черную клетку
+            if ((toRow + toCol) % 2 == 0) return false;
+
+            return !targetCell.HasChecker;
         }
 
         // Показать возможные ходы
