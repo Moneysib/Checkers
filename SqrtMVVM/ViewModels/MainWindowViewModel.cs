@@ -1588,10 +1588,8 @@ namespace SqrtMVVM.ViewModels
             {
                 // У игрока есть шашки, но нет ходов - объявляем ничью
                 string opponent = CurrentPlayer == "Белые" ? "Черные" : "Белые";
-                ShowGameResultMessage($"НИЧЬЯ!\nИгрок {CurrentPlayer} не имеет возможных ходов.\nПобедитель: {opponent}?", Brushes.Gold);
+                ShowGameResultMessage($"ПАТ!\nИгрок {CurrentPlayer} не имеет возможных ходов.\nПобедитель: {opponent}!", Brushes.Gold);
 
-                // Обновляем статистику как ничью
-                UpdateStatistics("Ничья");
             }
         }
 
